@@ -15,18 +15,33 @@ namespace printmap.Services
         public async Task<Bitmap> GetBitmapForRegion(float lat1, float lon1, float lat2, float lon2){
             //"https://api.mapbox.com/v4/mapbox.streets/1/0/0.png?access_token=your-access-token"
 
-            var url = BuildUrl();
+            var zoom = 16;
+            var coord1 = GetTile(lat1, lon1, zoom);
+            var coord2 = GetTile(lat2, lon2, zoom);
+            var minX = Math.Min(coord1.X, coord2.X);
+            var maxX = Math.Max(coord1.X, coord2.X);
+            var minY = Math.Min(coord1.Y, coord2.Y);
+            var maxY = Math.Max(coord1.Y, coord2.Y);
+
             using (HttpClient client = new HttpClient())
             {
-                using (HttpResponseMessage res = await client.GetAsync(url))
-                using (HttpContent content = res.Content)
+                for (var x = minX ; x <= maxX; x ++)
                 {
-                    res.EnsureSuccessStatusCode();
+                    for (var y = minY ; y < maxY; y ++)
+                    {
+                        var url = BuildUrl(new TileCoord(x, y, zoom));
+                        
+                        using (HttpResponseMessage res = await client.GetAsync(url))
+                        using (HttpContent content = res.Content)
+                        {
+                            res.EnsureSuccessStatusCode();
 
-                    var stream = await content.ReadAsStreamAsync();
+                            var stream = await content.ReadAsStreamAsync();
 
-                    var image = System.Drawing.Image.FromStream(stream);
-                    return new Bitmap(image);
+                            var image = System.Drawing.Image.FromStream(stream);
+                            return new Bitmap(image); // TODO https://stackoverflow.com/questions/9616617/c-sharp-copy-paste-an-image-region-into-another-image
+                        }
+                    }
                 }
             }
 
@@ -47,8 +62,8 @@ namespace printmap.Services
         }
 
 
-        private string BuildUrl(){
-            return $"https://api.mapbox.com/v4/mapbox.streets/{1}/{0}/{0}.png?access_token={_token}"; // todo pull options out into config options
+        private string BuildUrl(TileCoord coord){
+            return $"https://api.mapbox.com/v4/mapbox.streets/{coord.Zoom}/{coord.X}/{coord.Y}.png?access_token={_token}"; // todo pull options out into config options
         }
 
     }
