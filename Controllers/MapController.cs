@@ -11,8 +11,8 @@ namespace printmap.Controllers
     [Route("api/[controller]")]
     public class MapController : Controller
     {
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("{lat1}/{lon1}/{lat2}/{lon2}")]
+        public string Get(float lat1, float lon1, float lat2, float lon2)
         {
             var map = new MapDataService(); // todo, add unity container or some such ingest
             var imageTask = map.GetBitmapForRegion();
@@ -26,7 +26,7 @@ namespace printmap.Controllers
             var SigBase64= Convert.ToBase64String(byteImage); //Get Base64
 
             return $"data:image/png;base64,{SigBase64}";
-
+            // return $"COORD1 {lat1}, {lon1}";
         }
     }
 }
