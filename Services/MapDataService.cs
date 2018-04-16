@@ -11,7 +11,7 @@ namespace printmap.Services
 
         private string _token = "pk.eyJ1IjoiY2RoYW5uYSIsImEiOiJjaXVoY3AxdGUwMHVmM3BxZnZnMGFtZDA0In0.G2Gjh4DkpoyC1h9nZFaL5g"; // todo make a config option
 
-        public async Task<Bitmap> GetBitmapForRegion(){
+        public async Task<Bitmap> GetBitmapForRegion(float lat1, float lon1, float lat2, float lon2){
             //"https://api.mapbox.com/v4/mapbox.streets/1/0/0.png?access_token=your-access-token"
 
             var url = BuildUrl();

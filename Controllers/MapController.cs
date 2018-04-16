@@ -15,7 +15,7 @@ namespace printmap.Controllers
         public string Get(float lat1, float lon1, float lat2, float lon2)
         {
             var map = new MapDataService(); // todo, add unity container or some such ingest
-            var imageTask = map.GetBitmapForRegion();
+            var imageTask = map.GetBitmapForRegion(lat1, lon1, lat2, lon2);
             imageTask.Wait();
 
             var image = imageTask.Result;
