@@ -12,7 +12,7 @@ namespace printmap.Controllers
     public class MapController : Controller
     {
         [HttpGet("{lat1}/{lon1}/{lat2}/{lon2}")]
-        public string Get(float lat1, float lon1, float lat2, float lon2)
+        public IActionResult Get(float lat1, float lon1, float lat2, float lon2)
         {
             var map = new MapDataService(); // todo, add unity container or some such ingest
             var imageTask = map.GetBitmapForRegion(lat1, lon1, lat2, lon2);
@@ -25,7 +25,8 @@ namespace printmap.Controllers
             byte[] byteImage = ms.ToArray();
             var SigBase64= Convert.ToBase64String(byteImage); //Get Base64
 
-            return $"data:image/png;base64,{SigBase64}";
+            return File(byteImage, "image/png");
+            // return $"data:image/png;base64,{SigBase64}";
             // return $"COORD1 {lat1}, {lon1}";
         }
     }
