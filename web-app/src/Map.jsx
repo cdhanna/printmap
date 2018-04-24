@@ -1,19 +1,30 @@
 import React, { Component } from 'react';
-import ReactMapGL, {Marker} from 'react-map-gl';
+import ReactMapGL from 'react-map-gl';
 
 export default class Map extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      width: 1000,
+      height: 1000,
+      latitude: 37.7577,
+      longitude: -122.4376,
+      zoom: 8,
+    };
+  }
+
   render() {
     return (
       <ReactMapGL
-        width={400}
-        height={400}
-        latitude={37.7577}
-        longitude={-122.4376}
-        zoom={8}
+        width={this.state.width}
+        height={this.state.height}
+        latitude={this.state.latitude}
+        longitude={this.state.longitude}
+        zoom={this.state.zoom}
         mapboxApiAccessToken={process.env.REACT_APP_MAPBOX_ACCESS_TOKEN} 
         onViewportChange={(viewport) => {
           const {width, height, latitude, longitude, zoom} = viewport;
-          // call `setState` and use the state to update the map.
+          this.setState({width, height, latitude, longitude, zoom});
         }}
       />
     );
