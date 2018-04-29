@@ -25,16 +25,24 @@ namespace printmap.Services
             var width = (maxX - minX) + 1;
             var height = (maxY - minY) + 1;
 
-            var outputWidth = 512;
 
             var lat1Merc = MercY(lat1);
             var lat2Merc = MercY(lat2);
             var lon1Rad = (float)(lon1 * Math.PI / 180);
             var lon2Rad = (float)(lon2 * Math.PI / 180);
-
             var aspect = ( (Math.Max(lon1Rad, lon2Rad) - Math.Min(lon1Rad, lon2Rad))) / ( (Math.Max(lat1Merc, lat2Merc) - Math.Min(lat1Merc, lat2Merc)));
-            var outputHeight = (int)(outputWidth / aspect);
-            var output = new Bitmap(outputWidth, outputHeight);
+            var output = default(Bitmap);
+            
+            if (width >= height){
+                var outputWidth = 512;
+                var outputHeight = (int)(outputWidth / aspect);
+                output = new Bitmap(outputWidth, outputHeight);
+            } else {
+                var outputHeight = 512;
+                var outputWidth = (int)(outputHeight * aspect);
+                output = new Bitmap(outputWidth, outputHeight);
+            }
+
             var combined = new Bitmap(256 * width, 256 * height);
 
             //http://localhost:5000/api/map/42.367343/-71.236918/42.371790/-71.234418 cresent/moody to high/lowell
