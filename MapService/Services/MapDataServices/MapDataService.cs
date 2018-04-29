@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System;
 
-namespace printmap.Services 
+namespace printmap.Services.MapDataServices
 {
 
 
@@ -12,10 +12,16 @@ namespace printmap.Services
 
         private string _token = "pk.eyJ1IjoiY2RoYW5uYSIsImEiOiJjaXVoY3AxdGUwMHVmM3BxZnZnMGFtZDA0In0.G2Gjh4DkpoyC1h9nZFaL5g"; // todo make a config option
 
-        public async Task<Bitmap> GetBitmapForRegion(float lat1, float lon1, float lat2, float lon2){
+        public async Task<Bitmap> GetBitmapForRegion(MapBBoxRequest request){
             //"https://api.mapbox.com/v4/mapbox.streets/1/0/0.png?access_token=your-access-token"
 
-            var zoom = 18;
+            var lat1 = request.Lat1;
+            var lat2 = request.Lat2;
+            var lon1 = request.Lon1;
+            var lon2 = request.Lon2;
+            var zoom = request.Zoom;
+            var mapName = request.MapName;
+
             var coord1 = GetTile(lat1, lon1, zoom);
             var coord2 = GetTile(lat2, lon2, zoom);
             var minX = Math.Min(coord1.X, coord2.X);
@@ -60,7 +66,7 @@ namespace printmap.Services
                 {
                     for (var y = minY ; y <= maxY; y ++)
                     {
-                        var url = BuildUrl(new TileCoord(x, y, zoom));
+                        var url = BuildUrl(mapName, _token, new TileCoord(x, y, zoom));
                         using (HttpResponseMessage res = await client.GetAsync(url))
                         using (HttpContent content = res.Content)
                         {
@@ -137,9 +143,9 @@ namespace printmap.Services
             }
         }
 
-        private string BuildUrl(TileCoord coord)
+        private string BuildUrl(string mapName, string token, TileCoord coord)
         {
-            return $"https://api.mapbox.com/v4/mapbox.satellite/{coord.Zoom}/{coord.X}/{coord.Y}.png?access_token={_token}"; // todo pull options out into config options
+            return $"https://api.mapbox.com/v4/{mapName}/{coord.Zoom}/{coord.X}/{coord.Y}.png?access_token={token}"; // todo pull options out into config options
         }
 
     }

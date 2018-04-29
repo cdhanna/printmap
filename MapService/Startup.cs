@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using printmap.Services.MapDataServices;
 
 namespace printmap
 {
@@ -24,6 +25,9 @@ namespace printmap
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddSingleton(typeof(MapDataService), provider => new MapDataService());
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
