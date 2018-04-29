@@ -37,18 +37,14 @@ namespace printmap.Services
             var output = new Bitmap(outputWidth, outputHeight);
             var combined = new Bitmap(256 * width, 256 * height);
 
-//http://localhost:5000/api/map/42.367343/-71.236918/42.371790/-71.234418 cresent/moody to high/lowell
-//http://localhost:5000/api/map/42.375200/-71.235721/42.372928/-71.232366
-
-//http://localhost:5000/api/map/42.376571/-71.246941/42.372829/-71.236320 mainst to theater
-            //var latHeight = Math.Abs(GetLatFromTileY(zoom, minY) - GetLatFromTileY(zoom,minY + 1));
-
-            var combinedLon1 = GetLonFromTileX(zoom, minX);
-            var combinedLon2 = GetLonFromTileX(zoom, minX + width);
-            var combinedLat1 = GetLatFromTileY(zoom, minY);
-            var combinedLat2 = GetLatFromTileY(zoom, minY + height);
-
-
+            //http://localhost:5000/api/map/42.367343/-71.236918/42.371790/-71.234418 cresent/moody to high/lowell
+            //http://localhost:5000/api/map/42.375200/-71.235721/42.372928/-71.232366
+            //http://localhost:5000/api/map/42.376571/-71.246941/42.372829/-71.236320 mainst to theater
+  
+            var tileLon1 = GetLonFromTileX(zoom, minX);
+            var tileLon2 = GetLonFromTileX(zoom, minX + width);
+            var tileLat1 = GetLatFromTileY(zoom, minY);
+            var tileLat2 = GetLatFromTileY(zoom, minY + height);
 
             using (HttpClient client = new HttpClient())
             {
@@ -57,17 +53,12 @@ namespace printmap.Services
                     for (var y = minY ; y <= maxY; y ++)
                     {
                         var url = BuildUrl(new TileCoord(x, y, zoom));
-
-//http://localhost:5000/api/map/42.379494/-71.048584/42.381563/-71.040891
-
-                        //http://localhost:5000/api/map/42.290658/-71.171843/42.289903/-71.169225
                         using (HttpResponseMessage res = await client.GetAsync(url))
                         using (HttpContent content = res.Content)
                         {
                             res.EnsureSuccessStatusCode();
 
                             var stream = await content.ReadAsStreamAsync();
-
                             var image = System.Drawing.Image.FromStream(stream);
                             var bitmap = new Bitmap(image);
 
@@ -80,27 +71,17 @@ namespace printmap.Services
                 }
             }
 
-            // TODO copy the right part of the combined image into the output
-            //var combinedRegion = new Rectangle()
+            var tileLatHeight = Math.Max(tileLat1, tileLat2) - Math.Min(tileLat1, tileLat2);
+            var tileLonWidth = Math.Max(tileLon1, tileLon2) - Math.Min(tileLon1, tileLon2);
 
-            // lat1 = MercY(lat1);
-            // lat2= MercY(lat2);
-            // combinedLat1 = MercY(combinedLat1);
-            // combinedLat2 = MercY(combinedLat2);
+            var pixelYMin = (int)(((Math.Min(lat1, lat2) - Math.Min(tileLat1, tileLat2)) / tileLatHeight) * combined.Height);
+            var pixelYMax = (int)(((Math.Max(lat1, lat2) - Math.Min(tileLat1, tileLat2)) / tileLatHeight) * combined.Height);
 
-            var latHeight = Math.Max(combinedLat1, combinedLat2) - Math.Min(combinedLat1, combinedLat2);
-            var lonWidth = Math.Max(combinedLon1, combinedLon2) - Math.Min(combinedLon1, combinedLon2);
-
-            var userLatMin = (int)(((Math.Min(lat1, lat2) - Math.Min(combinedLat1, combinedLat2)) / latHeight) * combined.Height);
-            var userLatMax = (int)(((Math.Max(lat1, lat2) - Math.Min(combinedLat1, combinedLat2)) / latHeight) * combined.Height);
-
-            var userLonMin = (int)(((Math.Min(lon1, lon2) - Math.Min(combinedLon1, combinedLon2)) / lonWidth) * combined.Width);
-            var userLonMax = (int)(((Math.Max(lon1, lon2) - Math.Min(combinedLon1, combinedLon2)) / lonWidth) * combined.Width);
-
-            
+            var pixelXMin = (int)(((Math.Min(lon1, lon2) - Math.Min(tileLon1, tileLon2)) / tileLonWidth) * combined.Width);
+            var pixelXMax = (int)(((Math.Max(lon1, lon2) - Math.Min(tileLon1, tileLon2)) / tileLonWidth) * combined.Width);
 
             CopyRegionToIntoBitmap(combined,
-                                new Rectangle(userLonMin, combined.Height - userLatMax, userLonMax - userLonMin, userLatMax - userLatMin),
+                                new Rectangle(pixelXMin, combined.Height - pixelYMax, pixelXMax - pixelXMin, pixelYMax - pixelYMin),
                                 ref output, 
                                 new Rectangle(0, 0, output.Width, output.Height));
 
