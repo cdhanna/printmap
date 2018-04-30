@@ -4,7 +4,9 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using printmap.Services.BitmapServices;
 using printmap.Services.MapDataServices;
+using printmap.Services.MapTransformServices;
 
 namespace printmap.Controllers
 {
@@ -12,9 +14,14 @@ namespace printmap.Controllers
     public class MapController : Controller
     {
         public MapDataService MapDataService {get; set;}
+        public ElevationMapService ElevationTransformService {get; set;}
+        public BitmapHelperService BitmapHelperService {get; set;}
 
-        public MapController(MapDataService mapDataService){
+
+        public MapController(MapDataService mapDataService, ElevationMapService elevationMapService, BitmapHelperService bitmapHelperService){
             MapDataService = mapDataService;
+            ElevationTransformService = elevationMapService;
+            BitmapHelperService = bitmapHelperService;
         }
 
 
@@ -34,12 +41,12 @@ namespace printmap.Controllers
 
             var image = imageTask.Result;
 
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-            byte[] byteImage = ms.ToArray();
-            var SigBase64= Convert.ToBase64String(byteImage); //Get Base64
+            // System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            // image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+            // byte[] byteImage = ms.ToArray();
+            // var SigBase64= Convert.ToBase64String(byteImage); //Get Base64
 
-            return File(byteImage, "image/png");
+            return File(BitmapHelperService.Bitmap2Bytes(image), "image/jpg");
             // return $"data:image/png;base64,{SigBase64}";
             // return $"COORD1 {lat1}, {lon1}";
         }
@@ -60,12 +67,8 @@ namespace printmap.Controllers
 
             var image = imageTask.Result;
 
-            System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
-            byte[] byteImage = ms.ToArray();
-            var SigBase64= Convert.ToBase64String(byteImage); //Get Base64
+            return File(BitmapHelperService.Bitmap2Bytes(image), "image/jpg");
 
-            return File(byteImage, "image/png");
             // return $"data:image/png;base64,{SigBase64}";
             // return $"COORD1 {lat1}, {lon1}";
         }
