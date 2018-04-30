@@ -8,7 +8,7 @@ namespace printmap.Services.BitmapServices
         
         public byte[] Bitmap2Bytes(Bitmap image){
             System.IO.MemoryStream ms = new System.IO.MemoryStream();
-            image.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
+            image.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
             byte[] byteImage = ms.ToArray();
             return byteImage;
         }
