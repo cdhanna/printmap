@@ -29,7 +29,7 @@ namespace printmap
             services.AddMvc();
 
             services.AddSingleton(typeof(MapDataService), provider => new MapDataService());
-            services.AddSingleton(typeof(ElevationMapService), provider => new ElevationMapService());
+            services.AddSingleton(typeof(ElevationMapService), provider => new ElevationMapService(provider.GetService<BitmapHelperService>()));
             services.AddSingleton(typeof(BitmapHelperService), provider => new BitmapHelperService());
         }
 

@@ -13,6 +13,11 @@ namespace printmap.Services.BitmapServices
             return byteImage;
         }
         
+        public LockBitmap LockBitmap(Bitmap bitmap){
+            return new LockBitmap(bitmap);
+        }
+
+
     }
 
 }
