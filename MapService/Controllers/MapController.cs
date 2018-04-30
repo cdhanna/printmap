@@ -103,7 +103,7 @@ namespace printmap.Controllers
 
             var heightMap = TopoMapService.TransformElevationToTopoMap(imageTask.Result);
 
-            return File(BitmapHelperService.Bitmap2Bytes(heightMap), "image/png");
+            return File(BitmapHelperService.Bitmap2Bytes(heightMap, true), "image/png");
         }
     }
 }
