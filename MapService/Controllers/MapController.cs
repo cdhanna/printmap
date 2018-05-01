@@ -105,5 +105,24 @@ namespace printmap.Controllers
 
             return File(BitmapHelperService.Bitmap2Bytes(heightMap, true), "image/png");
         }
+
+        [HttpGet("topolines/{lat1}/{lon1}/{lat2}/{lon2}/{zoom?}")]
+        public IActionResult GetTopoLinesMap(float lat1, float lon1, float lat2, float lon2, int zoom=10)
+        {
+            var request = new MapBBoxRequest(){
+                Lon1 = lon1,
+                Lon2 = lon2,
+                Lat1 = lat1,
+                Lat2 = lat2,
+                MapName = "mapbox.terrain-rgb",
+                Zoom = zoom
+            };
+            var imageTask = MapDataService.GetBitmapForRegion(request);
+            imageTask.Wait();
+
+            var heightMap = TopoMapService.TransformElevationToTopoLinesMap(imageTask.Result);
+
+            return File(BitmapHelperService.Bitmap2Bytes(heightMap, true), "image/png");
+        }
     }
 }
