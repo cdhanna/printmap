@@ -5,6 +5,7 @@ using System;
 using printmap.Services.BitmapServices;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace printmap.Services.MapTransformServices
 {
@@ -129,6 +130,91 @@ namespace printmap.Services.MapTransformServices
             return output;
         }
 
+        public string TransformTopoToSVG(Bitmap topoMap){
+            var sb = new StringBuilder();
+            sb.AppendLine($"<svg width='{topoMap.Width}' height='{topoMap.Height}' xmlns='http://www.w3.org/2000/svg'>");
+           
+
+            // sb.AppendLine("<circle cx='20' cy='20' r='10'> </circle>"); // test. Draw a circle.
+            // sb.AppendLine("<path d='M50 50L70 50L70 70' fill='transparent' stroke='red'/>"); //test. Draw a path
+
+
+            var bitmap = new Bitmap(topoMap);
+            var locked = BitmapHelperService.LockBitmap(bitmap);
+            locked.LockBits();
+            
+            var trackedMask = new bool[locked.Width * locked.Height];
+
+            var pathData = "";
+            for (var x = 0 ; x < locked.Width; x ++){
+                for (var y = 0 ; y < locked.Height; y ++){
+
+                    var pixel = locked.GetPixel(x, y);
+                    if (pixel.R == 255){
+                        var paths = Trace(locked, trackedMask, x, y, pixel);
+                        // if (path.Count > 0){
+                        //     Console.WriteLine("Starting Trace");
+
+                        //     pathData += $"M{path[0].X} {path[0].Y}";
+                        //     for (var i = 1 ; i < path.Count; i ++){
+                        //         pathData += $" L{path[i].X} {path[i].Y}";
+                        //     }
+                        // }
+                    }                        
+
+                }
+            }
+            sb.AppendLine($"<path d='{pathData}' fill=\"none\" stroke='red'/>");
+
+
+            sb.AppendLine("</svg>");
+            var svgText = sb.ToString();          
+            return svgText;
+        }
+
+        private List<List<Point>> Trace(LockBitmap bitmap, bool[] mask, int x, int y, Color currentPixel){
+
+            var maskIndex = y * bitmap.Width + x;
+            if (mask[maskIndex]){
+                return new List<List<Point>>(); // this pixel has already been processed.
+            }
+
+            mask[maskIndex] = true; // mark this pixel as processed.
+            
+            var paths = new List<List<Point>>();
+
+            for (var nx = x - 1; nx <= x + 1; nx ++){
+                for (var ny = y - 1; ny <= y + 1;ny ++){
+                    if (nx == x && ny == y){
+                        continue; // ignore the neighbor coordinate that *is* the current pixel
+                    }
+
+                    var neighborPixel = bitmap.GetPixel(nx, ny);
+
+                    if (!mask[ny*bitmap.Width + nx] && neighborPixel.Equals(currentPixel)){
+                        // call trace on this neighbor!
+                        var subPaths = Trace(bitmap, mask, nx, ny, currentPixel);
+                        subPaths.ForEach(path => {
+                            path.Insert(0, new Point(x, y));
+                        });
+                        paths.AddRange(subPaths);
+                        //path.AddRange(subPath);
+                        //return path;
+                        // var subPaths = Trace(bitmap, mask, nx, ny, currentPixel);
+                        // foreach(var subPath in subPaths){
+                        //     subPath.Insert(0, new Point(x, y));
+                        // }
+                        // paths.AddRange(subPaths);
+                    }
+
+                }
+            }
+            if (paths.Count == 0){
+                var path = new Point[]{new Point(x, y)}.ToList();
+                paths.Add(path);
+            }
+            return paths;
+        }
 
         public string TransformElevationToSVG(Bitmap elevationMap, int gapSizeMeters = 50){
 

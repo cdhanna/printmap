@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.IO;
 
 namespace printmap.Services.BitmapServices
 {
@@ -13,6 +14,13 @@ namespace printmap.Services.BitmapServices
             return byteImage;
         }
         
+        public Bitmap Bytes2Bitmap(byte[] data){
+            var dataStream = new MemoryStream(data);
+            var image = System.Drawing.Image.FromStream(dataStream);
+            var bitmap = new Bitmap(image);
+            return bitmap;
+        }
+
         public LockBitmap LockBitmap(Bitmap bitmap){
             return new LockBitmap(bitmap);
         }
