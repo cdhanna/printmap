@@ -1,0 +1,2 @@
+// map
+export const CHANGE_BOX_COORDINATES = 'CHANGE_BOX_COORDINATES';
