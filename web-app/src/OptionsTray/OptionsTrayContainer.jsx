@@ -1,25 +1,38 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { updateCoordinates } from '../actions/map';
+import { updateTopLeft, updateBotRight } from '../actions/map';
 import OptionsTrayView from './OptionsTrayView';
+import { MapRect } from '../reducers/map';
 
-function OptionsTrayContainer({ topLeftLat, updateCoordinates }) {
-  const setTopLeftLat = (lat) => {
-    console.log(lat)
-    updateCoordinates(lat);
+function OptionsTrayContainer({ mapRect, updateTopLeft, updateBotRight }) {
+
+  const onChangeTopLeft = (change) => {
+    updateTopLeft(change);
   };
-  return <OptionsTrayView topLeftLat={topLeftLat} onChangeCallback={setTopLeftLat} />;
+  const onChangeBotRight = (change) => {
+    updateBotRight(change);
+  };
+
+  return (
+    <div>
+      <OptionsTrayView mapRect={mapRect} onChangeTopLeft={onChangeTopLeft} onChangeBotRight={onChangeBotRight} />
+    </div>
+  )
+  
 }
 
-const mapStateToProps = ({ mapState: { topLeftLat } }) => ({
-  topLeftLat,
+const mapStateToProps = ({ mapState: { mapRect } }) => ({
+  mapRect
 });
 
 const mapDispatchToProps = dispatch => ({
-  updateCoordinates: (nextLat) => {
-    dispatch(updateCoordinates(nextLat));
+  updateTopLeft: (coord) => {
+    dispatch(updateTopLeft(coord));
   },
+  updateBotRight: (coord) => {
+    dispatch(updateBotRight(coord));
+  }
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(OptionsTrayContainer);
