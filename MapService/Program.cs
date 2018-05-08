@@ -14,7 +14,10 @@ namespace printmap
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+
+            var v = new VectorizeProgram("Bitmaps/simple.png", "bin/simple.svg");
+
+            //BuildWebHost(args).Run();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using System.Drawing;
 using System;
 
-namespace printmap.Services 
+namespace printmap.Services.MapDataServices
 {
 
 
@@ -12,10 +12,16 @@ namespace printmap.Services
 
         private string _token = "pk.eyJ1IjoiY2RoYW5uYSIsImEiOiJjaXVoY3AxdGUwMHVmM3BxZnZnMGFtZDA0In0.G2Gjh4DkpoyC1h9nZFaL5g"; // todo make a config option
 
-        public async Task<Bitmap> GetBitmapForRegion(float lat1, float lon1, float lat2, float lon2){
+        public async Task<Bitmap> GetBitmapForRegion(MapBBoxRequest request){
             //"https://api.mapbox.com/v4/mapbox.streets/1/0/0.png?access_token=your-access-token"
 
-            var zoom = 16;
+            var lat1 = request.Lat1;
+            var lat2 = request.Lat2;
+            var lon1 = request.Lon1;
+            var lon2 = request.Lon2;
+            var zoom = request.Zoom;
+            var mapName = request.MapName;
+
             var coord1 = GetTile(lat1, lon1, zoom);
             var coord2 = GetTile(lat2, lon2, zoom);
             var minX = Math.Min(coord1.X, coord2.X);
@@ -24,15 +30,35 @@ namespace printmap.Services
             var maxY = Math.Max(coord1.Y, coord2.Y);
             var width = (maxX - minX) + 1;
             var height = (maxY - minY) + 1;
-            var ouptut = new Bitmap(512, 512);
+
+
+            var lat1Merc = MercY(lat1);
+            var lat2Merc = MercY(lat2);
+            var lon1Rad = (float)(lon1 * Math.PI / 180);
+            var lon2Rad = (float)(lon2 * Math.PI / 180);
+            var aspect = ( (Math.Max(lon1Rad, lon2Rad) - Math.Min(lon1Rad, lon2Rad))) / ( (Math.Max(lat1Merc, lat2Merc) - Math.Min(lat1Merc, lat2Merc)));
+            var output = default(Bitmap);
+            
+            if (width >= height){
+                var outputWidth = 512;
+                var outputHeight = (int)(outputWidth / aspect);
+                output = new Bitmap(outputWidth, outputHeight);
+            } else {
+                var outputHeight = 512;
+                var outputWidth = (int)(outputHeight * aspect);
+                output = new Bitmap(outputWidth, outputHeight);
+            }
+
             var combined = new Bitmap(256 * width, 256 * height);
 
-            var combinedLon1 = GetLonFromTileX(zoom, minX);
-            var combinedLon2 = GetLonFromTileX(zoom, maxX);
-            var combinedLat1 = GetLatFromTileY(zoom, minY);
-            var combinedLat2 = GetLatFromTileY(zoom, maxY);
-
-
+            //http://localhost:5000/api/map/42.367343/-71.236918/42.371790/-71.234418 cresent/moody to high/lowell
+            //http://localhost:5000/api/map/42.375200/-71.235721/42.372928/-71.232366
+            //http://localhost:5000/api/map/42.376571/-71.246941/42.372829/-71.236320 mainst to theater
+  
+            var tileLon1 = GetLonFromTileX(zoom, minX);
+            var tileLon2 = GetLonFromTileX(zoom, minX + width);
+            var tileLat1 = GetLatFromTileY(zoom, minY);
+            var tileLat2 = GetLatFromTileY(zoom, minY + height);
 
             using (HttpClient client = new HttpClient())
             {
@@ -40,15 +66,13 @@ namespace printmap.Services
                 {
                     for (var y = minY ; y <= maxY; y ++)
                     {
-                        var url = BuildUrl(new TileCoord(x, y, zoom));
-                        //http://localhost:5000/api/map/42.290658/-71.171843/42.289903/-71.169225
+                        var url = BuildUrl(mapName, _token, new TileCoord(x, y, zoom));
                         using (HttpResponseMessage res = await client.GetAsync(url))
                         using (HttpContent content = res.Content)
                         {
                             res.EnsureSuccessStatusCode();
 
                             var stream = await content.ReadAsStreamAsync();
-
                             var image = System.Drawing.Image.FromStream(stream);
                             var bitmap = new Bitmap(image);
 
@@ -61,12 +85,21 @@ namespace printmap.Services
                 }
             }
 
-            // TODO copy the right part of the combined image into the output
-            //var combinedRegion = new Rectangle()
+            var tileLatHeight = Math.Max(tileLat1, tileLat2) - Math.Min(tileLat1, tileLat2);
+            var tileLonWidth = Math.Max(tileLon1, tileLon2) - Math.Min(tileLon1, tileLon2);
 
+            var pixelYMin = (int)(((Math.Min(lat1, lat2) - Math.Min(tileLat1, tileLat2)) / tileLatHeight) * combined.Height);
+            var pixelYMax = (int)(((Math.Max(lat1, lat2) - Math.Min(tileLat1, tileLat2)) / tileLatHeight) * combined.Height);
 
+            var pixelXMin = (int)(((Math.Min(lon1, lon2) - Math.Min(tileLon1, tileLon2)) / tileLonWidth) * combined.Width);
+            var pixelXMax = (int)(((Math.Max(lon1, lon2) - Math.Min(tileLon1, tileLon2)) / tileLonWidth) * combined.Width);
 
-            return combined;
+            CopyRegionToIntoBitmap(combined,
+                                new Rectangle(pixelXMin, combined.Height - pixelYMax, pixelXMax - pixelXMin, pixelYMax - pixelYMin),
+                                ref output, 
+                                new Rectangle(0, 0, output.Width, output.Height));
+
+            return output;
 
         }
 
@@ -83,6 +116,11 @@ namespace printmap.Services
             var lat_rad = lat * Math.PI / 180;
             var y = n * (1 - (Math.Log( Math.Tan(lat_rad) + (1/Math.Cos(lat_rad))) / Math.PI)) / 2;
             return new TileCoord((int)x, (int)y, zoom);
+        }
+
+        private float MercY(float lat){
+            lat *= (float)(Math.PI / 180);
+            return (float)(Math.Log(Math.Tan(lat/2 + Math.PI/4)));
         }
 
         private float GetLonFromTileX(int zoom, float tileX)
@@ -105,9 +143,9 @@ namespace printmap.Services
             }
         }
 
-        private string BuildUrl(TileCoord coord)
+        private string BuildUrl(string mapName, string token, TileCoord coord)
         {
-            return $"https://api.mapbox.com/v4/mapbox.satellite/{coord.Zoom}/{coord.X}/{coord.Y}.png?access_token={_token}"; // todo pull options out into config options
+            return $"https://api.mapbox.com/v4/{mapName}/{coord.Zoom}/{coord.X}/{coord.Y}.png?access_token={token}"; // todo pull options out into config options
         }
 
     }

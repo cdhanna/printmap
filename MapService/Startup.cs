@@ -8,6 +8,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using printmap.Services.BitmapServices;
+using printmap.Services.MapDataServices;
+using printmap.Services.MapTransformServices;
 
 namespace printmap
 {
@@ -24,6 +27,15 @@ namespace printmap
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            services.AddSingleton(typeof(MapDataService), 
+                provider => new MapDataService());
+            services.AddSingleton(typeof(BitmapHelperService), 
+                provider => new BitmapHelperService());
+            services.AddSingleton(typeof(ElevationMapService),
+                provider => new ElevationMapService(provider.GetService<BitmapHelperService>()));
+            services.AddSingleton(typeof(TopoMapService),
+                provider => new TopoMapService(provider.GetService<BitmapHelperService>()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
