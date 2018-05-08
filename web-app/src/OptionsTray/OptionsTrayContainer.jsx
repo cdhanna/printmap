@@ -5,21 +5,20 @@ import { updateCoordinates } from '../actions/map';
 import OptionsTrayView from './OptionsTrayView';
 
 function OptionsTrayContainer({ topLeftLat, updateCoordinates }) {
-  return <OptionsTrayView topLeftLat={topLeftLat} onChangeCallback={(value) => updateCoordinates(value)} />;
+  const setTopLeftLat = (lat) => {
+    console.log(lat)
+    updateCoordinates(lat);
+  };
+  return <OptionsTrayView topLeftLat={topLeftLat} onChangeCallback={setTopLeftLat} />;
 }
-
-const setTopLeftLat = (arg) => {
-  console.log(arg.target.value)
-
-};
 
 const mapStateToProps = ({ mapState: { topLeftLat } }) => ({
   topLeftLat,
 });
 
 const mapDispatchToProps = dispatch => ({
-  updateCoordinates: () => {
-    dispatch(updateCoordinates());
+  updateCoordinates: (nextLat) => {
+    dispatch(updateCoordinates(nextLat));
   },
 });
 
