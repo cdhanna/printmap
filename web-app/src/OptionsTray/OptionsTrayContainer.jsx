@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { updateTopLeft, updateBotRight } from '../actions/map';
+import { updateCoordinates } from '../actions/coordinates';
 import OptionsTrayView from './OptionsTrayView';
-import { MapRect } from '../reducers/map';
+import { MapRect } from '../reducers/coordinates';
 
-function OptionsTrayContainer({ mapRect, updateTopLeft, updateBotRight }) {
+function OptionsTrayContainer({ mapRect, updateTopLeft, updateBotRight, updateBox }) {
 
-  const onChangeTopLeft = (change) => {
-    updateTopLeft(change);
-  };
-  const onChangeBotRight = (change) => {
-    updateBotRight(change);
+  const onChange = (change) => {
+    updateBox(change);
   };
 
   return (
     <div>
-      <OptionsTrayView mapRect={mapRect} onChangeTopLeft={onChangeTopLeft} onChangeBotRight={onChangeBotRight} />
+      <OptionsTrayView mapRect={mapRect} onChange={onChange} />
     </div>
   )
   
@@ -27,11 +24,8 @@ const mapStateToProps = ({ mapState: { mapRect } }) => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  updateTopLeft: (coord) => {
-    dispatch(updateTopLeft(coord));
-  },
-  updateBotRight: (coord) => {
-    dispatch(updateBotRight(coord));
+  updateBox: (coord) => {
+    dispatch(updateCoordinates(coord));
   }
 });
 

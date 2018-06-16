@@ -1,0 +1,73 @@
+.app {
+
+    background-color: #2196f3;
+
+    .title-view {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        h1 {
+            align-self: center;
+            text-align: center;
+            width: 100%;
+            color: white;
+            font-size: 10vw;
+            font-family: 'Passion One', cursive;
+
+            // transform: translate(0, -15vh);
+
+            div:nth-child(1){
+                font-size: 3vw;
+                font-family: 'Lobster', cursive;
+            }
+            div:nth-child(2){
+                transition: transform .5s ease-out;
+                transform: rotate(-3deg);
+                border-bottom: solid 1vw;
+                margin-left: 4vw;
+                margin-right: 4vw;
+            } 
+
+        }
+
+        button {
+            font-family: 'Lobster', cursive;
+            
+            width: 60%;
+            margin: auto;
+            // margin-top: 10vw;
+            // margin-bottom: 4vw;
+            height: 12vw;
+            background: none;
+            border: solid 1vw;
+            border-radius: 10vw;
+            color: white;
+            font-size: 8vw;
+            transition: transform .15s ease-out;
+            color: #f9f9f9;
+            border-color: #f9f9f9;
+
+            cursor: pointer;
+            &:hover {
+                transform: scale(1.01);
+                background: rgba(255, 255, 255, .1);
+                color: white;
+                border-color: white;
+            }
+
+        }
+    }
+
+    .map-view {
+
+        // background: purple;
+
+        position: relative;
+        height: 100vh;
+        // margin: auto;
+        // height: ~"calc(100vh - 200px)";
+        // max-width: 80%;
+    }
+}

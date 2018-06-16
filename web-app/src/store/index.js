@@ -6,10 +6,16 @@ export default function configureStore(initialState) {
   const middlewares = [thunk];
   const storeEnhancers = [];
 
+  const devtools = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
+
+  //const store = createStore(rootReducer, initialState, devtools);
+
   const isDev = process.env.NODE_ENV !== 'production';
 
   const middlewareEnhancer = applyMiddleware(...middlewares);
   storeEnhancers.unshift(middlewareEnhancer);
+  // storeEnhancers.unshift(devtools);
+  storeEnhancers.push(devtools)
 
   const store = createStore(rootReducer, initialState, compose(...storeEnhancers));
 
