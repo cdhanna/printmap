@@ -1,4 +1,4 @@
-namespace printmap.Services 
+namespace printmap.Services.MapDataServices
 {
     public struct TileCoord 
     {
@@ -10,8 +10,6 @@ namespace printmap.Services
             Y = y;
             Zoom = zoom;
         }
-
-
     }
 
 }

@@ -1,3 +1,5 @@
+src/**/*.css
+
 *.swp
 *.*~
 project.lock.json
