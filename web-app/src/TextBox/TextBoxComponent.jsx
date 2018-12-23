@@ -29,12 +29,6 @@ class TextBoxComponent extends Component {
     this.props.onChange( this.state.value );
   }
 
-  componentWillReceiveProps(next){
-    this.setState({
-      value: next.value
-    })
-  }
-  
   render(){
     return (
       <input type="text" value={this.state.value} onChange={this.onChangeHandler.bind(this)} onBlur={this.onBlurHandler.bind(this)}/>
